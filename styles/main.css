@@ -1,37 +1,67 @@
 body {
   font-family: Arial, sans-serif;
   margin: 0;
-  background: #f4f4f4;
+  background: #bbbbbb;
 }
 
 header {
   background: #222;
   color: white;
-  padding: 1rem;
+  padding: 0.6rem;
   display: flex;
   justify-content: space-between;
+  gap: 1rem;
   align-items: center;
 }
 
 header nav button {
-  margin-left: 10px;
-  padding: 6px 12px;
+  margin-left: 0.9rem;
+  padding: 0.6rem 0.8rem;
   border: none;
   background: #444;
   color: white;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 0.5rem;
 }
+
 header nav button:hover {
   background: #666;
 }
 
 .controls {
-  padding: 10px;
-  background: #ddd;
-  display: flex;
-  gap: 20px;
-  align-items: center;
+    background: #ddd;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 1.1rem;
+    align-items: center;
+    padding: 0.7rem;
+    font-size: 0.8rem;
+
+    button {
+        padding: 0.2rem;
+        background-color: transparent;
+        color: black;
+        font-weight: bold;
+        border-radius: 0.5rem;
+    }
+
+    input {
+        width: 4rem;
+    }
+}
+
+.left {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.controls button:hover {
+    background-color: rgb(232, 232, 232);
+    cursor: pointer;
 }
 
 #graph {
@@ -62,9 +92,19 @@ header nav button:hover {
 .node.start {
   fill: green;
 }
+
 .node.end {
   fill: red;
 }
+
 .node.visited {
   fill: blue;
+}
+
+.info {
+    text-align: center;
+    align-items: center;
+    vertical-align: middle;
+    color: black;
+    font-size: 1.1rem;
 }

@@ -1,16 +1,17 @@
-import { dijkstra } from "./algorithms.js";
-const svg = document.getElementById("graph");
+import { dijkstra, dfs } from "./algorithms.js";
+export const svg = document.getElementById("graph");
 const startBox = document.getElementById("startBox");
 const endBox = document.getElementById("endBox");
 const algoBox = document.getElementById("algoBox");
 const calculateBtn = document.getElementById("calculateBtn");
 const resetBtn = document.getElementById("resetBtn");
+const generateBtn = document.getElementById("generateBtn");
 
 let graph = [];
 let edges = [];
 let startNode = null;
 let endNode = null;
-let selectedAlgo = "astar";
+let selectedAlgo = "dijkstra";
 
 // ------------------ GRAPH GENERATION ------------------
 function rand(min, max) {
@@ -20,7 +21,7 @@ function dist(a, b) {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
-function generateGraph(n = 20) {
+function generateGraph(n = 20, maximum = 5) {
   const nodes = [];
   const edges = [];
   for (let i = 0; i < n; i++) {
@@ -28,21 +29,22 @@ function generateGraph(n = 20) {
       id: i,
       x: rand(50, 850),
       y: rand(50, 550),
-      edges: []
+      edges: [],
+      connectedEdges: 0
     });
   }
 
-  for (let i = 0; i < n; i++) {
-    let connectedCount = 0;
-    
+  for (let i = 0; i < n; i++) {    
     for (let j = i + 1; j < n; j++) {
-      if (connectedCount <= 4 && Math.random() < 0.2) {
-        connectedCount++;
+      if (nodes[i].connectedEdges < maximum && nodes[j].connectedEdges < maximum && Math.random() < 0.17) {
         const d = Math.round(dist(nodes[i], nodes[j]) / 10);
         nodes[i].edges.push({ to: j, weight: d });
         nodes[j].edges.push({ to: i, weight: d });
         edges.push({ from: i, to: j, weight: d });
-      }
+
+        nodes[i].connectedEdges++;
+        nodes[j].connectedEdges++;
+      }    
     }
   }
   return { nodes, edges };
@@ -69,7 +71,7 @@ function drawGraph() {
     const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     circle.setAttribute("cx", node.x);
     circle.setAttribute("cy", node.y);
-    circle.setAttribute("r", 12);
+    circle.setAttribute("r", 10);
     circle.setAttribute("class", "node");
     circle.addEventListener("click", () => selectNode(node, circle));
     svg.appendChild(circle);
@@ -114,7 +116,6 @@ function highlightPath(path) {
     if (line) line.classList.add("path");
   }
 }
-
 // ------------------ EVENT LISTENERS ------------------
 document.querySelectorAll("nav button").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -124,20 +125,26 @@ document.querySelectorAll("nav button").forEach(btn => {
 });
 
 calculateBtn.addEventListener("click", () => {
-  if (!startNode || !endNode) {
-    alert("Select start and end nodes first!");
-    return;
-  }
-
-  let path = [];
-    if (selectedAlgo === "dijkstra") {
-      path = dijkstra(startNode, endNode, graph);
-    } else {
-      alert(`Algorithm ${selectedAlgo} not implemented yet`);
+    if (!startNode || !endNode) {
+      alert("Select start and end nodes first!");
       return;
     }
 
-  highlightPath(path);
+    let result = undefined;
+    if (selectedAlgo === "dijkstra") {
+        result = dijkstra(startNode, endNode, graph);
+    }
+    
+    else if (selectedAlgo === "dfs") {
+        result = dfs(startNode, endNode, graph);
+    } 
+
+    else {
+        alert(`Algorithm ${selectedAlgo} not implemented yet`);
+        return;
+    }
+
+  highlightPath(result);
 });
 
 resetBtn.addEventListener("click", () => {
@@ -148,8 +155,18 @@ resetBtn.addEventListener("click", () => {
   drawGraph();
 });
 
+generateBtn.addEventListener("click" , () => {
+  startNode = null;
+  endNode = null;
+  startBox.textContent = "None";
+  endBox.textContent = "None";
+
+  const nodesCount = document.getElementById("nodes");
+  const max = document.getElementById("maximum-edges");
+  const { nodes, edges: es } = generateGraph(nodesCount.value, max.value);
+  graph = nodes;
+  edges = es;
+  drawGraph();
+})
 // ------------------ INIT ------------------
-const { nodes, edges: es } = generateGraph();
-graph = nodes;
-edges = es;
-drawGraph();
+
