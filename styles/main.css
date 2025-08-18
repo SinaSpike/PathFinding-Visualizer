@@ -1,0 +1,70 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f4f4f4;
+}
+
+header {
+  background: #222;
+  color: white;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header nav button {
+  margin-left: 10px;
+  padding: 6px 12px;
+  border: none;
+  background: #444;
+  color: white;
+  cursor: pointer;
+  border-radius: 6px;
+}
+header nav button:hover {
+  background: #666;
+}
+
+.controls {
+  padding: 10px;
+  background: #ddd;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+#graph {
+  background: white;
+  display: block;
+  margin: 10px auto;
+  border: 1px solid #ccc;
+}
+
+/* Graph styling */
+.edge {
+  stroke: #aaa;
+  stroke-width: 2px;
+}
+
+.edge.path {
+  stroke: orange;
+  stroke-width: 4px;
+}
+
+.node {
+  fill: black;
+  stroke: white;
+  stroke-width: 2px;
+  cursor: pointer;
+}
+
+.node.start {
+  fill: green;
+}
+.node.end {
+  fill: red;
+}
+.node.visited {
+  fill: blue;
+}

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Graph Pathfinding Visualizer</title>
+        <link rel="stylesheet" href="styles/main.css" />
+    </head>
+    <body>
+        <header>
+            <h1>Pathfinding Graph Visualizer</h1>
+            <nav>
+                <button data-algo="astar">A*</button>
+                <button data-algo="dijkstra">Dijkstra</button>
+                <button data-algo="bfs">BFS</button>
+                <button data-algo="dfs">DFS</button>
+            </nav>
+        </header>
+
+        <section class="controls">
+            <div>Start: <span id="startBox">None</span></div>
+            <div>End: <span id="endBox">None</span></div>
+            <div>Algorithm: <span id="algoBox">A*</span></div>
+            <button id="calculateBtn">Calculate Path</button>
+            <button id="resetBtn">Reset</button>
+        </section>
+
+        <main>
+            <svg id="graph" width="900" height="600"></svg>
+        </main>
+
+        <script src="scripts/main.js" type="module"></script>
+    </body>
+</html>
