@@ -1,4 +1,4 @@
-import { dijkstra, dfs } from "./algorithms.js";
+import { dijkstra, dfs, bfs } from "./algorithms.js";
 export const svg = document.getElementById("graph");
 const startBox = document.getElementById("startBox");
 const endBox = document.getElementById("endBox");
@@ -137,6 +137,10 @@ calculateBtn.addEventListener("click", () => {
     
     else if (selectedAlgo === "dfs") {
         result = dfs(startNode, endNode, graph);
+    } 
+
+    else if (selectedAlgo === "bfs") {
+        result = bfs(startNode, endNode, graph);
     } 
 
     else {

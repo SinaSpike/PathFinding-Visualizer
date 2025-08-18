@@ -45,17 +45,22 @@ export function dfs(start, end, graph) {
 
     for (let e of node.edges) {
       const neighbor = graph[e.to];
-      if (!visited.has(neighbor.id)) {
-        parent[neighbor.id] = node.id;
-        if (visit(neighbor)) return true; // path found
+
+      if (visited.has(neighbor.id)) {
+        continue;
+      }
+
+      parent[neighbor.id] = node.id;
+      if (visit(neighbor)) {
+        return true;
       }
     }
+
     return false;
   }
 
   visit(start);
 
-  // Reconstruct path
   const path = [];
   let cur = end.id;
   while (cur !== undefined) {
@@ -66,3 +71,39 @@ export function dfs(start, end, graph) {
 
   return path.reverse();
 }
+
+export function bfs(start, end, graph) {
+  const queue = [start];
+  const visited = new Set([start.id]);
+  const parent = {};
+
+  while (queue.length > 0) {
+    const node = queue.shift();
+    if (node === end) break;
+
+    for (let e of node.edges) {
+      const neighbor = graph[e.to];
+
+      if (visited.has(neighbor.id)) {
+        continue;
+      }
+
+      visited.add(neighbor.id);
+      parent[neighbor.id] = node.id;
+      queue.push(neighbor); 
+    }
+  }
+
+  const path = [];
+  let cur = end.id;
+
+  while (cur !== undefined) {
+    path.push(cur);
+    if (cur === start.id) break;
+    cur = parent[cur];
+  }
+
+  return path.reverse();
+}
+
+  
