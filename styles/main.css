@@ -78,8 +78,13 @@ header nav button:hover {
 }
 
 .edge.path {
-  stroke: orange;
-  stroke-width: 4px;
+  stroke: rgb(255, 140, 0);
+  stroke-width: 4.2px;
+}
+
+.edge.visited {
+  stroke: rgb(146, 146, 255);
+  stroke-width: 2.5px;
 }
 
 .node {
@@ -95,10 +100,6 @@ header nav button:hover {
 
 .node.end {
   fill: red;
-}
-
-.node.visited {
-  fill: blue;
 }
 
 .info {

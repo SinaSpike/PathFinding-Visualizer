@@ -1,4 +1,5 @@
 import { dijkstra, dfs, bfs } from "./algorithms.js";
+
 export const svg = document.getElementById("graph");
 const startBox = document.getElementById("startBox");
 const endBox = document.getElementById("endBox");
@@ -7,66 +8,67 @@ const calculateBtn = document.getElementById("calculateBtn");
 const resetBtn = document.getElementById("resetBtn");
 const generateBtn = document.getElementById("generateBtn");
 
-let graph = [];
-let edges = [];
+let graph = [];   // nodes
+let edges = [];   // edges
 let startNode = null;
 let endNode = null;
 let selectedAlgo = "dijkstra";
 
-// ------------------ GRAPH GENERATION ------------------
-function rand(min, max) {
-  return Math.random() * (max - min) + min;
-}
-function dist(a, b) {
-  return Math.hypot(a.x - b.x, a.y - b.y);
-}
+// ------------------ UTILS ------------------
+const rand = (min, max) => Math.random() * (max - min) + min;
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
-function generateGraph(n = 20, maximum = 5) {
+// ------------------ GRAPH GENERATION ------------------
+function generateGraph(n = 20, maxEdges = 5) {
+  svg.innerHTML = '';
   const nodes = [];
-  const edges = [];
+  const es = [];
+
   for (let i = 0; i < n; i++) {
     nodes.push({
       id: i,
       x: rand(50, 850),
       y: rand(50, 550),
       edges: [],
-      connectedEdges: 0
+      connectedEdges: 0,
+      el: null
     });
   }
 
-  for (let i = 0; i < n; i++) {    
+  for (let i = 0; i < n; i++) {
     for (let j = i + 1; j < n; j++) {
-      if (nodes[i].connectedEdges < maximum && nodes[j].connectedEdges < maximum && Math.random() < 0.17) {
+      if (
+        nodes[i].connectedEdges < maxEdges &&
+        nodes[j].connectedEdges < maxEdges &&
+        Math.random() < 0.17
+      ) {
         const d = Math.round(dist(nodes[i], nodes[j]) / 10);
-        nodes[i].edges.push({ to: j, weight: d });
-        nodes[j].edges.push({ to: i, weight: d });
-        edges.push({ from: i, to: j, weight: d });
+        const el = drawEdge(nodes[i], nodes[j]);
 
+        nodes[i].edges.push({ to: j, weight: d, el });
+        nodes[j].edges.push({ to: i, weight: d, el });
+        es.push({ from: i, to: j, weight: d, el });
         nodes[i].connectedEdges++;
         nodes[j].connectedEdges++;
-      }    
+      }
     }
   }
-  return { nodes, edges };
+  return { nodes, edges: es };
 }
 
 // ------------------ DRAW GRAPH ------------------
-function drawGraph() {
-  svg.innerHTML = "";
-  // draw edges
-  edges.forEach(e => {
-    const from = graph[e.from];
-    const to = graph[e.to];
-    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    line.setAttribute("x1", from.x);
-    line.setAttribute("y1", from.y);
-    line.setAttribute("x2", to.x);
-    line.setAttribute("y2", to.y);
-    line.setAttribute("class", "edge");
-    svg.appendChild(line);
-  });
+function drawEdge(from, to) {
+  const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+  line.setAttribute("x1", from.x);
+  line.setAttribute("y1", from.y);
+  line.setAttribute("x2", to.x);
+  line.setAttribute("y2", to.y);
+  line.setAttribute("class", "edge");
+  svg.appendChild(line);
+  return line;
+}
 
-  // draw nodes
+function drawNodes() {
   graph.forEach(node => {
     const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     circle.setAttribute("cx", node.x);
@@ -76,6 +78,14 @@ function drawGraph() {
     circle.addEventListener("click", () => selectNode(node, circle));
     svg.appendChild(circle);
     node.el = circle;
+  });
+}
+
+// ------------------ RESET GRAPH ------------------
+function resetGraph() {
+  edges.forEach(edge => edge.el.classList.remove("path", "visited"));
+  graph.forEach(node => {
+    node.el.classList.remove("start", "end");
   });
 }
 
@@ -101,20 +111,32 @@ function selectNode(node, el) {
 }
 
 // ------------------ PATH HIGHLIGHT ------------------
-function highlightPath(path) {
-  svg.querySelectorAll(".edge").forEach(e => e.classList.remove("path"));
-  if (!path || path.length < 2) {
-    alert("path not found");
-  };
-  for (let i = 0; i < path.length - 1; i++) {
-    const a = path[i], b = path[i + 1];
-    const line = [...svg.querySelectorAll("line")].find(l =>
-      (l.getAttribute("x1") == graph[a].x && l.getAttribute("y1") == graph[a].y &&
-       l.getAttribute("x2") == graph[b].x && l.getAttribute("y2") == graph[b].y) ||
-      (l.getAttribute("x1") == graph[b].x && l.getAttribute("y1") == graph[b].y &&
-       l.getAttribute("x2") == graph[a].x && l.getAttribute("y2") == graph[a].y));
-    if (line) line.classList.add("path");
+async function highlightPath(pathEdges) {
+  if (!pathEdges?.length) {
+    alert("Path not found!");
+    return;
   }
+  
+  for (const e of pathEdges) {
+    e.el.classList.remove("visited");
+    e.el.classList.add("path");
+    await delay(30);
+  }
+}
+
+async function highlightVisiteds(edges) {
+  svg.querySelectorAll(".edge").forEach(e => e.classList.remove("path"));
+  svg.querySelectorAll(".edge").forEach(e => e.classList.remove("visited"));
+  for (const e of edges) {
+    e.el.classList.add("visited");
+    await delay(115);
+  }
+}
+
+
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 // ------------------ EVENT LISTENERS ------------------
 document.querySelectorAll("nav button").forEach(btn => {
@@ -125,30 +147,22 @@ document.querySelectorAll("nav button").forEach(btn => {
 });
 
 calculateBtn.addEventListener("click", () => {
-    if (!startNode || !endNode) {
-      alert("Select start and end nodes first!");
+  if (!startNode || !endNode) {
+    alert("Select start and end nodes first!");
+    return;
+  }
+
+  let result;
+  switch (selectedAlgo) {
+    case "dijkstra": result = dijkstra(startNode, endNode, graph, edges); break;
+    case "dfs":      result = dfs(startNode, endNode, graph, edges); break;
+    case "bfs":      result = bfs(startNode, endNode, graph, edges); break;
+    default:
+      alert(`Algorithm ${selectedAlgo} not implemented yet`);
       return;
-    }
-
-    let result = undefined;
-    if (selectedAlgo === "dijkstra") {
-        result = dijkstra(startNode, endNode, graph);
-    }
-    
-    else if (selectedAlgo === "dfs") {
-        result = dfs(startNode, endNode, graph);
-    } 
-
-    else if (selectedAlgo === "bfs") {
-        result = bfs(startNode, endNode, graph);
-    } 
-
-    else {
-        alert(`Algorithm ${selectedAlgo} not implemented yet`);
-        return;
-    }
-
-  highlightPath(result);
+  }
+highlightVisiteds(result.visitedEdges)
+  .then(() => highlightPath(result.path));
 });
 
 resetBtn.addEventListener("click", () => {
@@ -156,21 +170,20 @@ resetBtn.addEventListener("click", () => {
   endNode = null;
   startBox.textContent = "None";
   endBox.textContent = "None";
-  drawGraph();
+  resetGraph();
 });
 
-generateBtn.addEventListener("click" , () => {
+generateBtn.addEventListener("click", () => {
   startNode = null;
   endNode = null;
   startBox.textContent = "None";
   endBox.textContent = "None";
 
-  const nodesCount = document.getElementById("nodes");
-  const max = document.getElementById("maximum-edges");
-  const { nodes, edges: es } = generateGraph(nodesCount.value, max.value);
+  const nodesCount = +document.getElementById("nodes").value;
+  const max = +document.getElementById("maximum-edges").value;
+  const { nodes, edges: es } = generateGraph(nodesCount, max);
+
   graph = nodes;
   edges = es;
-  drawGraph();
-})
-// ------------------ INIT ------------------
-
+  drawNodes();
+});
