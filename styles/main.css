@@ -31,37 +31,52 @@ header nav button:hover {
 .controls {
     background: #ddd;
     display: flex;
-    flex-direction: row;
     justify-content: space-between;
-    gap: 1.1rem;
     align-items: center;
+    gap: 1rem;
     padding: 0.7rem;
     font-size: 0.8rem;
-
-    button {
-        padding: 0.2rem;
-        background-color: transparent;
-        color: black;
-        font-weight: bold;
-        border-radius: 0.5rem;
-    }
-
-    input {
-        width: 4rem;
-    }
 }
 
-.left {
+.controls button {
+    padding: 0.2rem;
+    background-color: transparent;
+    color: black;
+    font-weight: bold;
+    border-radius: 0.5rem;
+}
+
+.controls input {
+    width: 4rem;
+}
+
+.left,
+.middle,
+.right {
+    flex: 1;
     display: flex;
-    flex-direction: row;
     align-items: center;
-    justify-content: center;
     gap: 1rem;
 }
 
+.left {
+    justify-content: flex-start;
+}
+
+.middle {
+    justify-content: center;
+    gap: 4rem;
+    font-weight: bold;
+}
+
+.right {
+    justify-content: flex-end;
+    gap: 0.4rem;
+}
+
 .controls button:hover {
-    background-color: rgb(232, 232, 232);
-    cursor: pointer;
+  background-color: rgb(232, 232, 232);
+  cursor: pointer;
 }
 
 #graph {
@@ -75,6 +90,10 @@ header nav button:hover {
 .edge {
   stroke: #aaa;
   stroke-width: 2px;
+}
+
+.edge:hover {
+  cursor: pointer;
 }
 
 .edge.path {
@@ -103,9 +122,9 @@ header nav button:hover {
 }
 
 .info {
-    text-align: center;
-    align-items: center;
-    vertical-align: middle;
-    color: black;
-    font-size: 1.1rem;
+  text-align: center;
+  align-items: center;
+  vertical-align: middle;
+  color: black;
+  font-size: 1.1rem;
 }

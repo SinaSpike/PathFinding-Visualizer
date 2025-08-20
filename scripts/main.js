@@ -65,6 +65,14 @@ function drawEdge(from, to) {
   line.setAttribute("x2", to.x);
   line.setAttribute("y2", to.y);
   line.setAttribute("class", "edge");
+
+  line.addEventListener("click", () => {
+  from.edges = from.edges.filter(edge => edge.el !== line);
+  to.edges = to.edges.filter(edge => edge.el !== line);
+  edges = edges.filter(edge => edge.el !== line);
+  line.remove();
+  });
+
   svg.appendChild(line);
   return line;
 }
@@ -113,7 +121,7 @@ function selectNode(node, el) {
 
 // ------------------ PATH HIGHLIGHT ------------------
 async function highlightPath(pathEdges) {
-  if (!pathEdges?.length) {
+  if (!pathEdges || pathEdges.length === 0) {
     alert("Path not found!");
     return;
   }
@@ -162,8 +170,12 @@ calculateBtn.addEventListener("click", () => {
       return;
   }
 
+  const nodesOfPath = Math.floor(result.path.length - 1, 0);
+  updateStats(calcDistance(result.path), nodesOfPath);
+
   highlightVisiteds(result.visitedEdges)
   .then(() => highlightPath(result.path));
+
 });
 
 resetBtn.addEventListener("click", () => {
@@ -172,6 +184,7 @@ resetBtn.addEventListener("click", () => {
   endNode = null;
   startBox.textContent = "None";
   endBox.textContent = "None";
+  updateStats(0, 0);
 });
 
 generateBtn.addEventListener("click", () => {
@@ -188,3 +201,19 @@ generateBtn.addEventListener("click", () => {
   edges = es;
   drawNodes();
 });
+
+// ------------------ UPDATE STATS ------------------
+function updateStats(dist, nodes) {
+  document.querySelector('.js-dist').innerHTML = `Distance of path: ${dist}`;
+  document.querySelector('.js-nodes').innerHTML = `Nodes of path: ${nodes}`;
+}
+
+function calcDistance(path) {
+  let result = 0;
+
+  for (const e of path) {
+    result += e.weight;
+  }
+
+  return result;
+}

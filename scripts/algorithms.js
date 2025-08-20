@@ -1,15 +1,15 @@
 // ------------------ HELPERS ------------------
 function buildPath(start, end, parent) {
   const path = [];
-  let cur = end.id;
+  let cur = end;
 
-  while (cur !== undefined) {
+  while (cur !== undefined && cur !== null) {
     path.push(cur);
-    if (cur === start.id) break;
+    if (cur === start) break;
     cur = parent[cur];
   }
   
-  return path.reverse(); // node ids from start → end
+  return path.reverse();
 }
 
 function reconstructEdges(path, edges) {
@@ -29,31 +29,38 @@ export function dijkstra(start, end, nodes, edges) {
   const dist = {};
   const parent = {};
   const visitedEdges = [];
-
-  nodes.forEach(n => dist[n.id] = Infinity);
+  
+  const nodeMap = {};
+  nodes.forEach(n => {
+    nodeMap[n.id] = n;
+    dist[n.id] = Infinity;
+  });
+  
   dist[start.id] = 0;
-
-  const pq = [start];
+  const pq = [{id: start.id, dist: 0}];
+  
   while (pq.length) {
-    pq.sort((a, b) => dist[a.id] - dist[b.id]);
-    const u = pq.shift();
-
-    if (u === end) break;
-
+    pq.sort((a, b) => a.dist - b.dist);
+    const {id: currentId} = pq.shift();
+    const u = nodeMap[currentId];
+    
+    if (currentId === end.id) break;
+    
     for (const e of u.edges) {
       visitedEdges.push(e);
-      const v = nodes[e.to];
-      const alt = dist[u.id] + e.weight;
-
-      if (alt < dist[v.id]) {
-        dist[v.id] = alt;
-        parent[v.id] = u.id;
-        pq.push(v);
+      const vId = e.to === currentId ? e.from : e.to;
+      const v = nodeMap[vId];
+      const alt = dist[currentId] + e.weight;
+      
+      if (alt < dist[vId]) {
+        dist[vId] = alt;
+        parent[vId] = currentId;
+        pq.push({id: vId, dist: alt});
       }
     }
   }
-
-  const path = buildPath(start, end, parent);
+  
+  const path = buildPath(start.id, end.id, parent);
   return {path: reconstructEdges(path, edges), visitedEdges};
 }
 
@@ -61,48 +68,63 @@ export function dfs(start, end, nodes, edges) {
   const parent = {};
   const visitedNodes = new Set();
   const visitedEdges = [];
-
-  function visit(node) {
-    if (node === end) return true;
-    visitedNodes.add(node.id);
-
-    for (const e of node.edges) {
+  
+  const nodeMap = {};
+  nodes.forEach(n => nodeMap[n.id] = n);
+  
+  const stack = [start.id];
+  visitedNodes.add(start.id);
+  
+  while (stack.length) {
+    const currentId = stack.pop();
+    if (currentId === end.id) break;
+    
+    const currentNode = nodeMap[currentId];
+    
+    for (const e of currentNode.edges) {
       visitedEdges.push(e);
-      const neighbor = nodes[e.to];
-      if (visitedNodes.has(neighbor.id)) continue;
-
-      parent[neighbor.id] = node.id;
-      if (visit(neighbor)) return true;
+      const neighborId = e.to === currentId ? e.from : e.to;
+      
+      if (!visitedNodes.has(neighborId)) {
+        visitedNodes.add(neighborId);
+        parent[neighborId] = currentId;
+        stack.push(neighborId);
+      }
     }
-    return false;
   }
-
-  visit(start);
-  const path = buildPath(start, end, parent);
+  
+  const path = buildPath(start.id, end.id, parent);
   return {path: reconstructEdges(path, edges), visitedEdges};
 }
 
 export function bfs(start, end, nodes, edges) {
   const parent = {};
   const visitedNodes = new Set([start.id]);
-  const queue = [start];
   const visitedEdges = [];
-
+  
+  const nodeMap = {};
+  nodes.forEach(n => nodeMap[n.id] = n);
+  
+  const queue = [start.id];
+  
   while (queue.length) {
-    const node = queue.shift();
-    if (node === end) break;
-
-    for (const e of node.edges) {
+    const currentId = queue.shift();
+    if (currentId === end.id) break;
+    
+    const currentNode = nodeMap[currentId];
+    
+    for (const e of currentNode.edges) {
       visitedEdges.push(e);
-      const neighbor = nodes[e.to];
-      if (visitedNodes.has(neighbor.id)) continue;
-
-      visitedNodes.add(neighbor.id);
-      parent[neighbor.id] = node.id;
-      queue.push(neighbor);
+      const neighborId = e.to === currentId ? e.from : e.to;
+      
+      if (!visitedNodes.has(neighborId)) {
+        visitedNodes.add(neighborId);
+        parent[neighborId] = currentId;
+        queue.push(neighborId);
+      }
     }
   }
-
-  const path = buildPath(start, end, parent);
+  
+  const path = buildPath(start.id, end.id, parent);
   return {path: reconstructEdges(path, edges), visitedEdges};
 }
