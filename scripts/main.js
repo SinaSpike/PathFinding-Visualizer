@@ -8,8 +8,8 @@ const calculateBtn = document.getElementById("calculateBtn");
 const resetBtn = document.getElementById("resetBtn");
 const generateBtn = document.getElementById("generateBtn");
 
-let graph = [];   // nodes
-let edges = [];   // edges
+let nodes = [];
+let edges = [];
 let startNode = null;
 let endNode = null;
 let selectedAlgo = "dijkstra";
@@ -19,7 +19,7 @@ const rand = (min, max) => Math.random() * (max - min) + min;
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
 // ------------------ GRAPH GENERATION ------------------
-function generateGraph(n = 20, maxEdges = 5) {
+function generateGraph(n, maxEdges) {
   svg.innerHTML = '';
   const nodes = [];
   const es = [];
@@ -43,11 +43,12 @@ function generateGraph(n = 20, maxEdges = 5) {
         Math.random() < 0.17
       ) {
         const d = Math.round(dist(nodes[i], nodes[j]) / 10);
-        const el = drawEdge(nodes[i], nodes[j]);
+        const edge = { from: i, to: j, weight: d, el: drawEdge(nodes[i], nodes[j]) };
 
-        nodes[i].edges.push({ to: j, weight: d, el });
-        nodes[j].edges.push({ to: i, weight: d, el });
-        es.push({ from: i, to: j, weight: d, el });
+        nodes[i].edges.push(edge);
+        nodes[j].edges.push(edge);
+        es.push(edge);
+
         nodes[i].connectedEdges++;
         nodes[j].connectedEdges++;
       }
@@ -69,24 +70,24 @@ function drawEdge(from, to) {
 }
 
 function drawNodes() {
-  graph.forEach(node => {
+  nodes.forEach(node => {
     const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     circle.setAttribute("cx", node.x);
     circle.setAttribute("cy", node.y);
     circle.setAttribute("r", 10);
     circle.setAttribute("class", "node");
+    node.el = circle;
+
     circle.addEventListener("click", () => selectNode(node, circle));
     svg.appendChild(circle);
-    node.el = circle;
   });
 }
 
 // ------------------ RESET GRAPH ------------------
 function resetGraph() {
   edges.forEach(edge => edge.el.classList.remove("path", "visited"));
-  graph.forEach(node => {
-    node.el.classList.remove("start", "end");
-  });
+  if (endNode?.el) endNode.el.classList.remove("end");
+  if (startNode?.el) startNode.el.classList.remove("start");
 }
 
 // ------------------ NODE SELECTION ------------------
@@ -127,13 +128,12 @@ async function highlightPath(pathEdges) {
 async function highlightVisiteds(edges) {
   svg.querySelectorAll(".edge").forEach(e => e.classList.remove("path"));
   svg.querySelectorAll(".edge").forEach(e => e.classList.remove("visited"));
+
   for (const e of edges) {
     e.el.classList.add("visited");
     await delay(115);
   }
 }
-
-
 
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -154,23 +154,24 @@ calculateBtn.addEventListener("click", () => {
 
   let result;
   switch (selectedAlgo) {
-    case "dijkstra": result = dijkstra(startNode, endNode, graph, edges); break;
-    case "dfs":      result = dfs(startNode, endNode, graph, edges); break;
-    case "bfs":      result = bfs(startNode, endNode, graph, edges); break;
+    case "dijkstra": result = dijkstra(startNode, endNode, nodes, edges); break;
+    case "dfs":      result = dfs(startNode, endNode, nodes, edges); break;
+    case "bfs":      result = bfs(startNode, endNode, nodes, edges); break;
     default:
       alert(`Algorithm ${selectedAlgo} not implemented yet`);
       return;
   }
-highlightVisiteds(result.visitedEdges)
+
+  highlightVisiteds(result.visitedEdges)
   .then(() => highlightPath(result.path));
 });
 
 resetBtn.addEventListener("click", () => {
+  resetGraph();
   startNode = null;
   endNode = null;
   startBox.textContent = "None";
   endBox.textContent = "None";
-  resetGraph();
 });
 
 generateBtn.addEventListener("click", () => {
@@ -181,9 +182,9 @@ generateBtn.addEventListener("click", () => {
 
   const nodesCount = +document.getElementById("nodes").value;
   const max = +document.getElementById("maximum-edges").value;
-  const { nodes, edges: es } = generateGraph(nodesCount, max);
+  const { nodes: ns, edges: es } = generateGraph(nodesCount, max);
 
-  graph = nodes;
+  nodes = ns;
   edges = es;
   drawNodes();
 });

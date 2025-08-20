@@ -8,6 +8,7 @@ function buildPath(start, end, parent) {
     if (cur === start.id) break;
     cur = parent[cur];
   }
+  
   return path.reverse(); // node ids from start → end
 }
 
